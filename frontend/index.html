@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#08111f">
+  <title>EntrevistIA · Preparación de admisión a posgrado</title>
+  <link rel="icon" href="/ui/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/ui/styles.css">
+  <script type="module" src="/ui/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Ir al contenido</a>
+  <aside class="sidebar" aria-label="Navegación principal">
+    <a class="brand" href="#dashboard"><span class="brand-mark">EI</span><span>EntrevistIA<small>Preparación académica</small></span></a>
+    <nav>
+      <button class="nav-button active" data-page="dashboard" aria-current="page"><span aria-hidden="true">◆</span> Panel principal</button>
+      <button class="nav-button" data-page="profile"><span aria-hidden="true">◎</span> Perfil del candidato</button>
+      <button class="nav-button" data-page="cv"><span aria-hidden="true">▤</span> Análisis de CV</button>
+      <button class="nav-button" data-page="interview"><span aria-hidden="true">◉</span> Simulador de entrevista</button>
+      <button class="nav-button" data-page="questions"><span aria-hidden="true">? Banco de preguntas</button>
+      <button class="nav-button" data-page="results"><span aria-hidden="true">▣</span> Resultados e historial</button>
+      <button class="nav-button" data-page="system"><span aria-hidden="true">⚙</span> Estado del sistema</button>
+    </nav>
+    <div class="sidebar-note"><p>Simulación académica independiente. No es la plataforma oficial de admisión del Instituto Tecnológico El Llano Aguascalientes.</p><small>Maestría en Inteligencia Artificial</small></div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <header class="topbar"><div><span class="breadcrumb">AI Admission Simulator</span><span class="slash">/</span><span id="page-title">Panel principal</span></div><div class="top-actions"><span id="connection" class="badge neutral">Comprobando conexión</span><button id="refresh-status" class="icon-button" title="Actualizar estado" aria-label="Actualizar estado">↻</button></div></header>
+
+    <section id="dashboard-page" class="page" aria-label="Panel principal">
+      <div class="hero"><div><span class="eyebrow">PREPARACIÓN DE ADMISIÓN</span><h1>Bienvenido a tu simulador de admisión</h1><p>Practica entrevistas, analiza tu CV y organiza tu preparación para la Maestría en Inteligencia Artificial.</p></div><div class="hero-card" id="provider-summary">Proveedor local: comprobando…</div></div>
+      <div class="card-grid">
+        <article class="panel"><span class="eyebrow">PERFIL</span><h2 id="dashboard-profile">Sin perfil guardado</h2><p id="dashboard-profile-detail">Crea o edita tu perfil del candidato.</p><button class="text-button" data-goto="profile">Ir al perfil</button></article>
+        <article class="panel"><span class="eyebrow">CV</span><h2 id="dashboard-cv">Sin análisis de CV</h2><p id="dashboard-cv-detail">Sube un CV en PDF para identificar fortalezas y evidencia faltante.</p><button class="text-button" data-goto="cv">Analizar CV</button></article>
+        <article class="panel"><span class="eyebrow">ENTREVISTA</span><h2 id="dashboard-interview">Sin sesión reciente</h2><p id="dashboard-interview-detail">Inicia una entrevista rápida, estándar o completa.</p><button class="text-button" data-goto="interview">Iniciar entrevista</button></article>
+      </div>
+      <div class="panel"><div class="section-heading"><h2>Sesiones recientes</h2><small id="recent-count">0 sesiones</small></div><div id="recent-sessions" class="stack"><div class="empty">No hay sesiones restauradas todavía.</div></div></div>
+      <div class="panel"><div class="section-heading"><h2>Accesos rápidos</h2></div><div class="quick-links"><button data-goto="questions">Banco de preguntas</button><button data-goto="results">Resultados e historial</button><button data-goto="system">Estado del sistema</button></div></div>
+    </section>
+
+    <section id="profile-page" class="page" hidden aria-label="Perfil del candidato">
+      <div class="section-heading"><div><span class="eyebrow">CANDIDATO</span><h1>Perfil del candidato</h1><p>Guarda tu información académica y profesional para contextualizar la preparación.</p></div></div>
+      <div class="panel">
+        <form id="profile-form" class="form-grid">
+          <label>Nombre completo<input id="profile-name" required maxlength="200" placeholder="Nombre y apellidos"></label>
+          <label>Correo electrónico<input id="profile-email" type="email" maxlength="254" placeholder="correo@ejemplo.com"></label>
+          <label class="full">Formación académica<textarea id="profile-academic" maxlength="8000" rows="6" placeholder="Titulación, materias relevantes, proyectos académicos..."></textarea></label>
+          <label class="full">Experiencia profesional<textarea id="profile-professional" maxlength="8000" rows="6" placeholder="Puestos, tecnologías, proyectos y responsabilidades..."></textarea></label>
+          <div class="form-actions full"><button class="primary-button" type="submit">Guardar perfil</button><button class="secondary-button" id="profile-reset" type="button">Limpiar formulario</button></div>
+          <p id="profile-feedback" class="feedback" role="status"></p>
+        </form>
+      </div>
+      <div class="panel"><div class="section-heading"><h2>Perfil almacenado</h2><small id="profile-id">Sin identificador</small></div><div id="profile-stored" class="stored-profile"><div class="empty">No se ha guardado ningún perfil.</div></div></div>
+    </section>
+
+    <section id="cv-page" class="page" hidden aria-label="Análisis de CV">
+      <div class="section-heading"><div><span class="eyebrow">DOCUMENTO ACADÉMICO</span><h1>Análisis de CV</h1><p>Sube un PDF para extraer evidencia académica y profesional. El análisis es preparación, no una decisión oficial.</p></div></div>
+      <div class="panel">
+        <form id="cv-form" class="upload-row">
+          <label class="file-label"><span>Archivo PDF</span><input id="cv-file" type="file" accept=".pdf,application/pdf" required></label>
+          <button class="primary-button" type="submit">Subir CV</button>
+          <p id="cv-upload-feedback" class="feedback" role="status"></p>
+        </form>
+      </div>
+      <div id="cv-analysis" class="panel"><div class="empty">No hay CV analizado.</div></div>
+      <div class="panel"><div class="section-heading"><h2>Estado del análisis</h2></div><div id="cv-status" class="stack"><div class="empty">Sin estado disponible.</div></div></div>
+    </section>
+
+    <section id="interview-page" class="page" hidden aria-label="Simulador de entrevista">
+      <div class="section-heading"><div><span class="eyebrow">COMITÉ DE ADMISIÓN VIRTUAL</span><h1>Simulador de entrevista</h1><p>Entrevista simulada para preparación. Las preguntas y respuestas se obtienen del backend real.</p></div></div>
+      <div class="panel" id="interview-setup">
+        <div class="form-grid compact">
+          <label>Modo de entrevista
+            <select id="interview-mode">
+              <option value="quick">Rápido · 5 preguntas</option>
+              <option value="standard" selected>Estándar · 10 preguntas</option>
+              <option value="complete">Completo · 15 preguntas</option>
+            </select>
+          </label>
+          <label>Nombre para la sesión<input id="interview-name" maxlength="200" placeholder="Candidato de simulación"></label>
+          <div class="form-actions"><button class="primary-button" id="start-interview" type="button">Iniciar entrevista</button><button class="secondary-button" id="restore-interview" type="button">Restaurar última sesión</button></div>
+        </div>
+        <p id="interview-setup-feedback" class="feedback" role="status"></p>
+      </div>
+      <div id="interview-session" class="panel" hidden>
+        <div class="session-bar"><div><strong id="interview-progress-label">Pregunta 0 de 0</strong><small id="interview-status">created</small></div><div class="progress-track"><div id="interview-progress" class="progress-fill" style="width:0%"></div></div></div>
+        <article class="question-card"><span class="eyebrow" id="question-category">CATEGORÍA</span><h2 id="current-question">Cargando pregunta…</h2><small id="question-difficulty"></small></article>
+        <form id="answer-form" class="answer-area">
+          <label>Respuesta<textarea id="answer-input" rows="8" maxlength="4000" placeholder="Escribe tu respuesta..." required></textarea></label>
+          <div class="form-actions"><button class="primary-button" id="submit-answer" type="submit">Enviar respuesta</button><button class="secondary-button" id="request-followup" type="button">Generar seguimiento</button><button class="danger-button" id="complete-interview" type="button">Finalizar entrevista</button></div>
+          <p id="answer-feedback" class="feedback" role="status"></p>
+        </form>
+        <div id="followup-card" class="panel subtle" hidden></div>
+      </div>
+      <div class="panel"><div class="section-heading"><h2>Historial de la sesión</h2></div><div id="interview-history" class="stack"><div class="empty">Sin historial todavía.</div></div></div>
+      <div class="panel"><div class="section-heading"><h2>Evaluación de respuestas</h2><small>Preparación, no calificación oficial</small></div><div id="evaluation-panel" class="stack"><div class="empty">Envía una respuesta para evaluarla.</div></div></div>
+    </section>
+
+    <section id="questions-page" class="page" hidden aria-label="Banco de preguntas">
+      <div class="section-heading"><div><span class="eyebrow">BANCO DE PREGUNTAS</span><h1>Preguntas de admisión</h1><p>30 preguntas reales del banco local. Filtra por categoría y practica.</p></div></div>
+      <div class="panel"><label>Categoría<select id="question-category-filter"><option value="">Todas las categorías</option></select></label></div>
+      <div id="question-list" class="question-grid"><div class="empty">Cargando preguntas…</div></div>
+    </section>
+
+    <section id="results-page" class="page" hidden aria-label="Resultados e historial">
+      <div class="section-heading"><div><span class="eyebrow">RESULTADOS</span><h1>Resultados e historial</h1><p>Sesiones completadas, respuestas y evaluaciones disponibles.</p></div></div>
+      <div class="panel"><div class="section-heading"><h2>Sesiones</h2></div><div id="results-sessions" class="stack"><div class="empty">No hay sesiones.</div></div></div>
+      <div class="panel"><div class="section-heading"><h2>Evaluaciones</h2></div><div id="results-evaluations" class="stack"><div class="empty">No hay evaluaciones.</div></div></div>
+    </section>
+
+    <section id="system-page" class="page" hidden aria-label="Estado del sistema">
+      <div class="section-heading"><div><span class="eyebrow">SERVICIOS LOCALES</span><h1>Estado del sistema</h1><p>Disponibilidad reportada por el backend.</p></div></div>
+      <div class="status-grid">
+        <article class="panel status-card"><span class="eyebrow">API</span><h2>Backend FastAPI</h2><p id="backend-status">Comprobando…</p></article>
+        <article class="panel status-card"><span class="eyebrow">MODELO</span><h2>Proveedor LLM</h2><p id="provider-status">Comprobando…</p><small id="provider-model">—</small></article>
+        <article class="panel status-card"><span class="eyebrow">OLLAMA</span><h2>Simulación real</h2><p id="ollama-note">Usa start-backend.ps1 -Provider ollama para inferencia real.</p></article>
+      </div>
+      <div class="panel system-note"><p>Esta es una simulación académica independiente, no una plataforma oficial de admisión.</p><small id="status-updated">Sin comprobaciones todavía.</small></div>
+    </section>
+
+    <footer class="page-footer"><span>AI Admission Simulator</span><span>Simulación académica independiente · Maestría en IA · Instituto Tecnológico El Llano Aguascalientes</span></footer>
+  </main>
+  <noscript>Activa JavaScript para utilizar esta interfaz.</noscript>
+</body>
+</html>
