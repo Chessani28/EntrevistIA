@@ -22,7 +22,7 @@ function showPage(page) {
     btn.classList.toggle("active", active);
     if (active) btn.setAttribute("aria-current", "page"); else btn.removeAttribute("aria-current");
   });
-  const titles = { dashboard:"Panel principal", profile:"Perfil del candidato", cv:"Análisis de CV", interview:"Simulador de entrevista", questions:"Banco de preguntas", results:"Resultados e historial", system:"Estado del sistema" };
+  const titles = { dashboard:"Panel principal", profile:"Perfil del candidato", cv:"Análisis de CV", interview:"Simulador de entrevista", questions:"Banco de preguntas", results:"Resultados e historial", preparation:"Mi plan de preparación", system:"Estado del sistema" };
   $("page-title").textContent = titles[page] || page;
   if (page === "dashboard") refreshDashboard();
   if (page === "profile") loadProfile();
@@ -30,6 +30,7 @@ function showPage(page) {
   if (page === "interview") refreshInterviewView();
   if (page === "questions") loadQuestions();
   if (page === "results") refreshResults();
+  if (page === "preparation") refreshPreparation();
   if (page === "system") refreshStatus();
 }
 async function refreshStatus() {
@@ -463,6 +464,7 @@ function wireEvents() {
   $("start-interview")?.addEventListener("click", startInterview);
   $("restore-interview")?.addEventListener("click", restoreInterview);
   $("answer-form")?.addEventListener("submit", submitAnswer);
+  $("preparation-form")?.addEventListener("submit", generatePreparationPlan);
   $("request-followup")?.addEventListener("click", generateFollowup);
   $("complete-interview")?.addEventListener("click", completeInterview);
 }
@@ -478,3 +480,79 @@ async function init() {
   }
 }
 init();
+
+async function generatePreparationPlan(event) {
+  event.preventDefault();
+  const candidateId = $("prep-candidate-id").value.trim() || state.candidateId;
+  if (!candidateId) { feedback("preparation-feedback", "Se requiere un candidato.", true); return; }
+  const targetDate = $("prep-target-date").value || null;
+  const minutes = Number($("prep-minutes").value) || 300;
+  const goal = $("prep-goal").value.trim() || null;
+  const topics = $("prep-topics").value.split(",").map(x => x.trim()).filter(Boolean);
+  feedback("preparation-feedback", "Generando plan personalizado…");
+  try {
+    const { data } = await api("/api/v1/preparation", jsonOptions({ candidate_id: candidateId, target_date: targetDate, study_minutes_per_week: minutes, goal, topics }, "POST"), 300000);
+    if (candidateId && !state.candidateId) { state.candidateId = candidateId; localStorage.setItem("ais_candidate_id", candidateId); }
+    $("prep-candidate-id").value = candidateId;
+    renderPreparationPlan(data);
+    feedback("preparation-feedback", "Plan generado.");
+    await loadPreparationInterviews(candidateId);
+  } catch (error) {
+    feedback("preparation-feedback", error.message, true);
+  }
+}
+function renderPreparationPlan(plan) {
+  if (!plan) { $("preparation-plan").innerHTML = "<div class=\"empty\">No hay plan activo.</div>"; return; }
+  const activities = plan.activities || [];
+  const progress = plan.progress || {completed:0,total:activities.length,percent:0};
+  $("preparation-plan").innerHTML = `
+    <div class="panel subtle">
+      <h2>${escapeHtml(plan.plan_json?.summary || "Plan de preparación")}</h2>
+      <p>${escapeHtml(plan.disclaimer || "")}</p>
+      <p><strong>Progreso:</strong> ${escapeHtml(progress.completed)}/${escapeHtml(progress.total)} (${escapeHtml(progress.percent)}%)</p>
+      <h3>Temas prioritarios</h3>
+      ${(plan.plan_json?.priority_topics || []).map(t => `<p>• ${escapeHtml(t.topic || "")} (${escapeHtml(t.priority || "")}) — ${escapeHtml(t.reason || "")}</p>`).join("") || "<p>Sin temas.</p>"}
+      <h3>Actividades</h3>
+      ${activities.map(a => `<div class="kv"><strong>${escapeHtml(a.title)}</strong><span>${escapeHtml(a.estimated_minutes)} min · semana ${escapeHtml(a.week_number)} · ${escapeHtml(a.status)}</span></div><p>${escapeHtml(a.description || "")}</p><div class="form-actions"><button class="text-button" data-complete-activity="${a.id}" type="button">${a.status === "completed" ? "Marcar pendiente" : "Marcar completada"}</button></div>`).join("") || "<p>Sin actividades.</p>"}
+      <h3>Hitos</h3>
+      ${(plan.plan_json?.milestones || []).map(m => `<p>• Semana ${escapeHtml(m.week)}: ${escapeHtml(m.title)} — ${escapeHtml(m.success_criteria || "")}</p>`).join("") || "<p>Sin hitos.</p>"}
+    </div>
+  `;
+  document.querySelectorAll("[data-complete-activity]").forEach(btn => btn.addEventListener("click", async () => {
+    const id = btn.dataset.completeActivity;
+    const activity = activities.find(a => a.id === id);
+    const next = activity && activity.status === "completed" ? "pending" : "completed";
+    const endpoint = next === "completed" ? "complete" : "pending";
+    try {
+      const updated = await api(`/api/v1/preparation/activities/${id}/${endpoint}`, jsonOptions({}, "POST"));
+      renderPreparationPlan(updated);
+    } catch (error) { feedback("preparation-feedback", error.message, true); }
+  }));
+}
+async function refreshPreparation() {
+  if (!state.candidateId) {
+    $("preparation-plan").innerHTML = "<div class=\"empty\">Ingresa un candidato y genera un plan.</div>";
+    return;
+  }
+  $("prep-candidate-id").value = state.candidateId;
+  try {
+    const { data } = await api(`/api/v1/preparation/candidate/${state.candidateId}/active`);
+    if (data && data.id) {
+      renderPreparationPlan(data);
+    } else {
+      $("preparation-plan").innerHTML = "<div class=\"empty\">No hay plan activo.</div>";
+    }
+  } catch (error) {
+    $("preparation-plan").innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+  }
+  await loadPreparationInterviews(state.candidateId);
+}
+async function loadPreparationInterviews(candidateId) {
+  try {
+    const { data } = await api(`/api/v1/preparation/candidate/${candidateId}/interviews`);
+    const items = data.items || [];
+    $("preparation-interviews").innerHTML = items.length ? items.map(x => `<div class="panel subtle"><strong>${escapeHtml(x.mode)} · ${escapeHtml(x.average_score ?? "—")}</strong><p>${escapeHtml(x.completed_at || "")}</p><small>Preguntas: ${escapeHtml(x.question_count)} · Debilidades: ${escapeHtml((x.weak_criteria || []).join(", ") || "ninguna")}</small></div>`).join("") : "<div class=\"empty\">Sin entrevistas completadas.</div>";
+  } catch (error) {
+    $("preparation-interviews").innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+  }
+}

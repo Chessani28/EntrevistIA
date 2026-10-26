@@ -1,34 +1,34 @@
-Ôªø# EntrevistIA
+# EntrevistIA
 
-Simulador inteligente de entrevistas de admisi√≥n a posgrado.
+Simulador inteligente de entrevistas de admisiÛn a posgrado.
 
-EntrevistIA es una aplicaci√≥n acad√©mica local para practicar entrevistas de admisi√≥n a programas de posgrado. Permite crear un perfil de candidato, responder preguntas por modo de entrevista, analizar un CV en PDF, evaluar respuestas con un modelo de lenguaje local y generar un reporte PDF de retroalimentaci√≥n.
+EntrevistIA es una aplicaciÛn acadÈmica local para practicar entrevistas de admisiÛn a programas de posgrado. Permite crear un perfil de candidato, responder preguntas por modo de entrevista, analizar un CV en PDF, evaluar respuestas con un modelo de lenguaje local y generar un reporte PDF de retroalimentaciÛn.
 
-La aplicaci√≥n funciona con FastAPI, una interfaz web sin compilaci√≥n y Ollama para inferencia local. No utiliza servicios cloud ni claves API.
+La aplicaciÛn funciona con FastAPI, una interfaz web sin compilaciÛn y Ollama para inferencia local. No utiliza servicios cloud ni claves API.
 
-## Prop√≥sito acad√©mico
+## PropÛsito acadÈmico
 
-Este proyecto fue desarrollado como simulaci√≥n acad√©mica independiente para apoyar la preparaci√≥n de candidatos. No es una plataforma oficial de admisiones y no sustituye la evaluaci√≥n real de un comit√© acad√©mico.
+Este proyecto fue desarrollado como simulaciÛn acadÈmica independiente para apoyar la preparaciÛn de candidatos. No es una plataforma oficial de admisiones y no sustituye la evaluaciÛn real de un comitÈ acadÈmico.
 
-## Caracter√≠sticas principales
+## CaracterÌsticas principales
 
-- Entrevistas simuladas en modos r√°pido, est√°ndar y profundo.
-- Banco de preguntas por categor√≠as acad√©micas y profesionales.
-- Inclusi√≥n obligatoria de la pregunta de estr√©s `ts-01` en todos los modos.
-- An√°lisis de CV en PDF con extracci√≥n de evidencia.
-- Evaluaci√≥n de respuestas con r√∫brica y retroalimentaci√≥n.
-- Generaci√≥n de reporte PDF por sesi√≥n.
+- Entrevistas simuladas en modos r·pido, est·ndar y profundo.
+- Banco de preguntas por categorÌas acadÈmicas y profesionales.
+- InclusiÛn obligatoria de la pregunta de estrÈs `ts-01` en todos los modos.
+- An·lisis de CV en PDF con extracciÛn de evidencia.
+- EvaluaciÛn de respuestas con r˙brica y retroalimentaciÛn.
+- GeneraciÛn de reporte PDF por sesiÛn.
 - Interfaz web local servida por FastAPI.
 - Asistente de voz experimental y deshabilitado por defecto.
 - Pruebas automatizadas para backend y frontend.
 
-## Stack tecnol√≥gico
+## Stack tecnolÛgico
 
 - Python 3.13
 - FastAPI y Uvicorn
 - SQLite
 - Ollama (inferencia local)
-- HTML, CSS y JavaScript sin compilaci√≥n
+- HTML, CSS y JavaScript sin compilaciÛn
 - pypdf, python-docx, numpy, httpx
 - pytest y node:test
 
@@ -38,16 +38,17 @@ Este proyecto fue desarrollado como simulaci√≥n acad√©mica independiente para ap
 backend/
   app/
     api/          Rutas HTTP y esquemas
-    core/         Configuraci√≥n y errores
-    prompts/      Prompts de evaluaci√≥n
-    services/     L√≥gica de negocio
+    core/         ConfiguraciÛn y errores
+    prompts/      Prompts de evaluaciÛn
+    services/     LÛgica de negocio
     providers/    Adaptadores LLM (mock y Ollama)
-frontend/         Interfaz web est√°tica
+frontend/         Interfaz web est·tica
 scripts/          Scripts de arranque para Windows
 tests/            Pruebas Python y JavaScript
 ```
 
-La base de datos SQLite se crea autom√°ticamente en `storage/admission.db`. Las cargas de CV y los reportes se almacenan en `storage/` y se excluyen del repositorio.
+La 
+base de datos SQLite se crea autom·ticamente en `storage/admission.db`. Las cargas de CV y los reportes se almacenan en `storage/` y se excluyen del repositorio.
 
 ## Requisitos previos
 
@@ -57,7 +58,7 @@ La base de datos SQLite se crea autom√°ticamente en `storage/admission.db`. Las 
 - Ollama instalado localmente si se desea usar el proveedor `ollama`.
 - Modelo local configurado en `config.toml`. Por defecto: `qwen3:4b-instruct-2507-q4_K_M`.
 
-## Instalaci√≥n en Windows
+## InstalaciÛn en Windows
 
 1. Clona el repositorio:
 
@@ -85,9 +86,9 @@ Para desarrollo y pruebas:
  .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
-## Variables de entorno y configuraci√≥n
+## Variables de entorno y configuraciÛn
 
-La aplicaci√≥n lee `config.toml`. No se requieren API keys.
+La aplicaciÛn lee `config.toml`. No se requieren API keys.
 
 Variables opcionales para el proceso:
 
@@ -97,7 +98,7 @@ Variables opcionales para el proceso:
 Ejemplo de `config.toml`:
 
 ```toml
-provider = "mock"
+provider = "ollama"
 ollama_url = "http://127.0.0.1:11434"
 model = "qwen3:4b-instruct-2507-q4_K_M"
 context_length = 4096
@@ -110,7 +111,7 @@ voice_enabled = false
 database_path = "storage/admission.db"
 ```
 
-## Instalaci√≥n y uso de Ollama
+## InstalaciÛn y uso de Ollama
 
 1. Instala Ollama desde el sitio oficial.
 2. Descarga el modelo configurado:
@@ -133,17 +134,73 @@ El script usa el runtime incluido en `storage/runtime` si existe; de lo contrari
  .\scripts\start-backend.ps1 -Provider ollama
 ```
 
-No se descargan modelos autom√°ticamente. Si el modelo no est√° instalado, la aplicaci√≥n devuelve un error expl√≠cito.
+No se descargan modelos autom·ticamente. Si el modelo no est· instalado, la aplicaciÛn devuelve un error explÌcito.
 
-## Inicializaci√≥n de la base de datos
+## Inicio rapido en Windows con Ollama real
 
-La base de datos se inicializa autom√°ticamente al arrancar la aplicaci√≥n:
+1. Clona el repositorio:
+
+```powershell
+git clone https://github.com/Chessani28/EntrevistIA.git
+Set-Location EntrevistIA
+```
+
+2. Crea y activa el entorno virtual:
+
+```powershell
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+3. Instala dependencias:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+4. Descarga el modelo requerido (una sola vez):
+
+```powershell
+ollama pull qwen3:4b-instruct-2507-q4_K_M
+```
+
+5. Inicia Ollama:
+
+```powershell
+.\scripts\start-ollama.ps1
+```
+
+6. Selecciona el proveedor real de Ollama y arranca FastAPI:
+
+```powershell
+.\scripts\start-backend.ps1 -Provider ollama
+```
+
+7. Abre EntrevistIA en el navegador:
+
+```text
+http://127.0.0.1:8000/
+```
+
+8. Verifica que se usa Ollama y no MockLLM:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/api/v1/system/status
+```
+
+La respuesta esperada debe incluir "provider": "ollama", "mock": false y "model": "qwen3:4b-instruct-2507-q4_K_M".
+
+
+## InicializaciÛn de la base de datos
+
+La base de datos se inicializa autom·ticamente al arrancar la aplicaciÛn:
 
 ```powershell
  .\.venv\Scripts\python.exe -m backend.run
 ```
 
-Tambi√©n puede inicializarse importando la aplicaci√≥n:
+TambiÈn puede inicializarse importando la aplicaciÛn:
 
 ```powershell
  .\.venv\Scripts\python.exe -c "from backend.app.main import create_app; app = create_app(); print('database initialized')"
@@ -183,13 +240,13 @@ La interfaz permite registrar candidatos, iniciar entrevistas, responder pregunt
 
 ## Flujo de ejemplo de entrevista
 
-1. Abre la aplicaci√≥n en modo mock.
+1. Abre la aplicaciÛn en modo mock.
 2. Crea o selecciona un candidato.
-3. Inicia una sesi√≥n de entrevista en modo r√°pido.
+3. Inicia una sesiÛn de entrevista en modo r·pido.
 4. Responde las preguntas mostradas, incluyendo `ts-01`.
-5. Eval√∫a las respuestas desde la interfaz.
-6. Genera el reporte PDF de la sesi√≥n.
-7. Revisa la retroalimentaci√≥n y las √°reas de mejora.
+5. Eval˙a las respuestas desde la interfaz.
+6. Genera el reporte PDF de la sesiÛn.
+7. Revisa la retroalimentaciÛn y las ·reas de mejora.
 
 ## Pruebas automatizadas
 
@@ -205,7 +262,7 @@ Pruebas JavaScript:
  node --test tests\*.mjs
 ```
 
-Verificaci√≥n de sintaxis JavaScript:
+VerificaciÛn de sintaxis JavaScript:
 
 ```powershell
  node --check frontend\voice-core.mjs
@@ -213,17 +270,17 @@ Verificaci√≥n de sintaxis JavaScript:
  node --check frontend\app.js
 ```
 
-Verificaci√≥n de importaci√≥n:
+VerificaciÛn de importaciÛn:
 
 ```powershell
  .\.venv\Scripts\python.exe -c "from backend.app.main import create_app; app = create_app(); print(app.title)"
 ```
 
-## Generaci√≥n de reportes PDF
+## GeneraciÛn de reportes PDF
 
-Los reportes se generan por sesi√≥n desde la API o la interfaz web. Los archivos generados se almacenan en `storage/` y no se publican en el repositorio.
+Los reportes se generan por sesiÛn desde la API o la interfaz web. Los archivos generados se almacenan en `storage/` y no se publican en el repositorio.
 
-Ejemplo de verificaci√≥n local:
+Ejemplo de verificaciÛn local:
 
 ```powershell
  .\.venv\Scripts\python.exe -m pytest tests\test_phase6_pdf.py -q
@@ -231,13 +288,17 @@ Ejemplo de verificaci√≥n local:
 
 ## Limitaciones conocidas
 
-- La calidad de la evaluaci√≥n depende del modelo local configurado.
-- El asistente de voz es experimental y est√° deshabilitado por defecto.
-- No hay autenticaci√≥n multiusuario ni despliegue productivo.
-- Las puntuaciones son retroalimentaci√≥n simulada, no una decisi√≥n oficial de admisi√≥n.
-- El an√°lisis de CV depende de la calidad del texto extra√≠ble del PDF.
+- La calidad de la evaluaciÛn depende del modelo local configurado.
+- El asistente de voz es experimental y est· deshabilitado por defecto.
+- No hay autenticaciÛn multiusuario ni despliegue productivo.
+- Las puntuaciones son retroalimentaciÛn simulada, no una decisiÛn oficial de admisiÛn.
+- El an·lisis de CV depende de la calidad del texto extraÌble del PDF.
 - No se incluyen modelos, runtimes ni datos personales en el repositorio.
 
-## Aviso acad√©mico
+- Ollama debe estar en ejecucion para usar inferencia real; si no esta disponible, las operaciones de entrevista pueden responder HTTP 503.
+- La inferencia con Ollama en CPU puede ser lenta.
+- La extraccion de grado/titulo desde CV tiene limitaciones conocidas.
+- Los IDs historicos de entrevista no disponibles responden HTTP 404.
+## Aviso acadÈmico
 
-EntrevistIA es una simulaci√≥n acad√©mica independiente. Las respuestas, puntuaciones y reportes generados por IA son herramientas de preparaci√≥n y no constituyen una decisi√≥n oficial de admisi√≥n ni una medici√≥n psicom√©trica validada. El sistema no estima la probabilidad real de admisi√≥n del candidato.
+EntrevistIA es una simulaciÛn acadÈmica independiente. Las respuestas, puntuaciones y reportes generados por IA son herramientas de preparaciÛn y no constituyen una decisiÛn oficial de admisiÛn ni una mediciÛn psicomÈtrica validada. El sistema no estima la probabilidad real de admisiÛn del candidato.

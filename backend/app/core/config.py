@@ -13,7 +13,7 @@ class Settings:
     version: str = "0.1.0"
     host: str = "127.0.0.1"
     port: int = 8000
-    provider: str = "mock"
+    provider: str = "ollama"
     ollama_url: str = "http://127.0.0.1:11434"
     model: str = "qwen3:4b-instruct-2507-q4_K_M"
     context_length: int = 2048

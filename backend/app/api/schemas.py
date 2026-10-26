@@ -300,3 +300,11 @@ class CandidateProfileResponse(BaseModel):
     academic_profile: dict = Field(default_factory=dict)
     created_at: str
 
+class CreatePreparationPlanRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    candidate_id: str = Field(min_length=1, max_length=128)
+    target_date: str | None = Field(default=None, max_length=10)
+    study_minutes_per_week: int = Field(default=300, ge=30, le=4200)
+    goal: str | None = Field(default=None, max_length=500)
+    topics: list[str] = Field(default_factory=list)
+

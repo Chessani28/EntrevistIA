@@ -8,6 +8,7 @@ from backend.app.api.interview import router as interview_router
 from backend.app.api.cv import router as cv_router
 from backend.app.api.evaluation import router as evaluation_router
 from backend.app.api.report import router as report_router
+from backend.app.api.preparation import router as preparation_router
 from backend.app.core.config import settings
 from backend.app.core.errors import AdmissionError
 from backend.app.db import init_db
@@ -19,6 +20,7 @@ from backend.app.providers.base import (
 from backend.app.providers.mock import MockLLM
 from backend.app.providers.ollama import OllamaProvider
 from backend.app.services.answer_evaluation_service import AnswerEvaluationService
+from backend.app.services.preparation_service import PreparationService
 from backend.app.services.interview_service import InterviewService
 from backend.app.services.candidate_service import CandidateService
 from backend.app.services.cv_analysis_service import CVAnalysisService
@@ -49,6 +51,7 @@ def create_app(provider: LLMProvider | None = None, voice=None) -> FastAPI:
         app.include_router(evaluation_router, prefix=prefix)
     for prefix in ("/api/v1/reports", "/api/v1/report"):
         app.include_router(report_router, prefix=prefix)
+    app.include_router(preparation_router, prefix="/api/v1/preparation")
     for prefix in ("/api/v1/interviews", "/api/v1/sessions"):
         app.include_router(evaluation_router, prefix=prefix)
         app.include_router(report_router, prefix=prefix)
@@ -66,6 +69,7 @@ def create_app(provider: LLMProvider | None = None, voice=None) -> FastAPI:
         "cv_analysis": CVAnalysisService(),
         "answer_evaluation": AnswerEvaluationService(),
         "reports": ReportService(),
+        "preparation": PreparationService(),
     }
 
     @app.middleware("http")

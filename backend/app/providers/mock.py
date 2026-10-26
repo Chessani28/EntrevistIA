@@ -45,6 +45,23 @@ class MockLLM:
                 "stress_management": {"addresses": ["planificación del tiempo"], "missing": ["planificación de contingencias"], "suggestions": ["Detallar cómo priorizará actividades."]} if stress else None,
                 "feedback": "Evaluación simulada para pruebas automatizadas. No constituye una decisión oficial de admisión."
             }, ensure_ascii=False)
+        if "plan de preparacion" in combined or "plan de preparación" in combined or "actividades" in combined or "priority_topics" in combined or "mi plan" in combined:
+            payload = {
+                "summary": "Plan simulado basado en las entrevistas y el CV disponible.",
+                "priority_topics": [
+                    {"topic": "Algoritmos", "reason": "Area con menor evidencia en las entrevistas.", "priority": "high", "allocated_minutes_per_week": 60},
+                    {"topic": "Bases de datos", "reason": "Se requiere mas evidencia practica.", "priority": "medium", "allocated_minutes_per_week": 40},
+                ],
+                "activities": [
+                    {"topic": "Algoritmos", "title": "Practicar diseño de algoritmos", "description": "Resolver 3 problemas y explicar la complejidad.", "estimated_minutes": 45, "week": 1, "day": "Lunes", "resource": "Documentacion oficial y ejercicios abiertos"},
+                    {"topic": "Bases de datos", "title": "Repasar SQL y JOIN", "description": "Escribir consultas con JOIN y subconsultas.", "estimated_minutes": 30, "week": 1, "day": "Miercoles", "resource": "Tutoriales introductorios"},
+                    {"topic": "Comunicacion", "title": "Respuestas estructuradas", "description": "Practicar respuestas de 90 segundos con evidencia.", "estimated_minutes": 25, "week": 2, "day": "Viernes", "resource": "Practica oral"},
+                ],
+                "milestones": [{"week": 2, "title": "Primera entrevista de repaso", "success_criteria": "Completar todas las actividades de la semana 1"}],
+                "review_sessions": ["Repaso de algoritmos al final de la semana 1"],
+            }
+            return __import__("json").dumps(payload, ensure_ascii=False)
+
         if "cv" in combined or "curriculum" in combined or "requisitos" in combined or "evidencia" in combined:
             return json.dumps({
                 "professional_summary": "Perfil académico y técnico extraído del CV proporcionado.",

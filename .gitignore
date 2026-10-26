@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -62,8 +62,25 @@ dist/
 *.egg-info/
 
 # Internal development reports and evidence packages
-docs/
-IMPLEMENTATION_REPORTS/
 DELIVERY/
 DELIVERY_ACADEMIC_PACKAGE.zip
 
+# Generated evidence, measurements, and candidate data
+docs/*-measurements.json
+IMPLEMENTATION_REPORTS/evidence/
+
+# Root-level temporary debug scripts and generated artifacts
+/*.py
+/*.txt
+/*.out
+/*.err
+/*.pid
+/*.xml
+/*.json
+/*.log
+/*.tmp
+/*.temp
+/good.pdf
+/cv.txt
+/collect.txt
+/start_ollama_custom.ps1

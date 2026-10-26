@@ -21,6 +21,7 @@
       <button class="nav-button" data-page="interview"><span aria-hidden="true">◉</span> Simulador de entrevista</button>
       <button class="nav-button" data-page="questions"><span aria-hidden="true">? Banco de preguntas</button>
       <button class="nav-button" data-page="results"><span aria-hidden="true">▣</span> Resultados e historial</button>
+      <button class="nav-button" data-page="preparation"><span aria-hidden="true">◎</span> Mi plan de preparación</button>
       <button class="nav-button" data-page="system"><span aria-hidden="true">⚙</span> Estado del sistema</button>
     </nav>
     <div class="sidebar-note"><p>Simulación académica independiente. No es la plataforma oficial de admisión del Instituto Tecnológico El Llano Aguascalientes.</p><small>Maestría en Inteligencia Artificial</small></div>
@@ -109,7 +110,24 @@
       <div class="panel"><div class="section-heading"><h2>Evaluaciones</h2></div><div id="results-evaluations" class="stack"><div class="empty">No hay evaluaciones.</div></div></div>
     </section>
 
+    <section id="preparation-page" class="page" hidden aria-label="Mi plan de preparación">
+      <div class="section-heading"><div><span class="eyebrow">PREPARACIÓN PERSONALIZADA</span><h1>Mi plan de preparación</h1><p>Genera un plan con IA a partir de tus entrevistas y análisis de CV.</p></div></div>
+      <div class="panel">
+        <form id="preparation-form" class="answer-area">
+          <label>Candidato ID<input id="prep-candidate-id" type="text" placeholder="ID del candidato" required></label>
+          <label>Fecha objetivo<input id="prep-target-date" type="date"></label>
+          <label>Minutos de estudio por semana<input id="prep-minutes" type="number" min="30" max="4200" value="300"></label>
+          <label>Objetivo<textarea id="prep-goal" rows="2" placeholder="Ej. mejorar algoritmos y bases de datos"></textarea></label>
+          <label>Temas a mejorar (separados por coma)<input id="prep-topics" type="text" placeholder="algoritmos, bases de datos"></label>
+          <div class="form-actions"><button class="primary-button" type="submit">Generar plan</button></div>
+          <p id="preparation-feedback" class="feedback" role="status"></p>
+        </form>
+      </div>
+      <div id="preparation-plan" class="stack"><div class="empty">No hay plan activo.</div></div>
+      <div class="panel"><div class="section-heading"><h2>Comparación de entrevistas</h2></div><div id="preparation-interviews" class="stack"><div class="empty">Sin entrevistas completadas.</div></div></div>
+    </section>
     <section id="system-page" class="page" hidden aria-label="Estado del sistema">
+
       <div class="section-heading"><div><span class="eyebrow">SERVICIOS LOCALES</span><h1>Estado del sistema</h1><p>Disponibilidad reportada por el backend.</p></div></div>
       <div class="status-grid">
         <article class="panel status-card"><span class="eyebrow">API</span><h2>Backend FastAPI</h2><p id="backend-status">Comprobando…</p></article>

@@ -118,6 +118,33 @@ CREATE TABLE IF NOT EXISTS reports (
     created_at TEXT NOT NULL,
     FOREIGN KEY (session_id) REFERENCES interview_sessions(id) ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS preparation_plans (
+    id TEXT PRIMARY KEY,
+    candidate_id TEXT NOT NULL,
+    target_date TEXT,
+    study_time_per_week INTEGER NOT NULL DEFAULT 300,
+    goal TEXT NOT NULL DEFAULT '',
+    topics TEXT NOT NULL DEFAULT '[]',
+    status TEXT NOT NULL DEFAULT 'active',
+    plan_json TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS preparation_activities (
+    id TEXT PRIMARY KEY,
+    plan_id TEXT NOT NULL,
+    topic TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    estimated_minutes INTEGER NOT NULL DEFAULT 30,
+    week_number INTEGER NOT NULL DEFAULT 1,
+    day_label TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending',
+    completed_at TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (plan_id) REFERENCES preparation_plans(id) ON DELETE CASCADE
+);
 """
 
 
@@ -177,6 +204,34 @@ def _migrate(connection) -> None:
             connection.execute(f"ALTER TABLE evaluations ADD COLUMN {name} {definition}")
     connection.execute("UPDATE evaluations SET updated_at = COALESCE(NULLIF(updated_at, ''), created_at)")
     connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_evaluations_answer_id ON evaluations(answer_id)")
+    for statement in (
+        """CREATE TABLE IF NOT EXISTS preparation_plans (
+            id TEXT PRIMARY KEY,
+            candidate_id TEXT NOT NULL,
+            target_date TEXT,
+            study_time_per_week INTEGER NOT NULL DEFAULT 300,
+            goal TEXT NOT NULL DEFAULT '',
+            topics TEXT NOT NULL DEFAULT '[]',
+            status TEXT NOT NULL DEFAULT 'active',
+            plan_json TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )""",
+        """CREATE TABLE IF NOT EXISTS preparation_activities (
+            id TEXT PRIMARY KEY,
+            plan_id TEXT NOT NULL,
+            topic TEXT NOT NULL DEFAULT '',
+            title TEXT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            estimated_minutes INTEGER NOT NULL DEFAULT 30,
+            week_number INTEGER NOT NULL DEFAULT 1,
+            day_label TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'pending',
+            completed_at TEXT,
+            created_at TEXT NOT NULL
+        )""",
+    ):
+        connection.execute(statement)
 
 
 def reset_database() -> None:

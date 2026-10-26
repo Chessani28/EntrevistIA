@@ -1,5 +1,5 @@
-# Development default. Select Ollama explicitly with scripts/start-backend.ps1.
-provider = "mock"
+# Normal startup uses the local Ollama provider. Select mock explicitly for development/testing only.
+provider = "ollama"
 ollama_url = "http://127.0.0.1:11434"
 model = "qwen3:4b-instruct-2507-q4_K_M"
 context_length = 4096
