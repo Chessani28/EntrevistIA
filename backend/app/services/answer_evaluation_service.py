@@ -18,11 +18,106 @@ from backend.app.services.question_bank_service import QuestionBankService
 from backend.app.services.session_service import InterviewSessionService
 
 
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
 DISCLAIMER = "Evaluacion generada por IA para preparacion del candidato. No constituye una decision oficial de admision ni una medicion psicometrica validada."
+
+
+def _normalize_llm_output(data):
+    if not isinstance(data, dict):
+        return data
+    # overall_score
+    try:
+        data["overall_score"] = max(0, min(100, int(float(data.get("overall_score", 0)))))
+    except (TypeError, ValueError):
+        data["overall_score"] = 0
+    # technical_accuracy
+    ta = data.get("technical_accuracy")
+    valid_cls = {"correct", "partially_correct", "unsupported", "incorrect", "insufficient_evidence", "not_applicable"}
+    if isinstance(ta, bool):
+        data["technical_accuracy"] = None
+    elif isinstance(ta, (int, float)):
+        cls = "correct" if ta >= 70 else ("partially_correct" if ta >= 40 else "incorrect")
+        data["technical_accuracy"] = {"classification": cls, "claims": []}
+    elif isinstance(ta, str):
+        if ta.strip().lower() in valid_cls:
+            data["technical_accuracy"] = {"classification": ta.strip().lower(), "claims": []}
+        else:
+            try:
+                data["technical_accuracy"] = {"classification": "not_applicable", "claims": [{"claim": ta, "supported": False}]}
+            except Exception:
+                data["technical_accuracy"] = None
+    elif isinstance(ta, dict):
+        cls = ta.get("classification")
+        if cls not in valid_cls:
+            # maybe a numeric score was put in classification
+            if isinstance(cls, (int, float)):
+                cls = "correct" if cls >= 70 else ("partially_correct" if cls >= 40 else "incorrect")
+            else:
+                cls = "not_applicable"
+        claims = ta.get("claims")
+        if not isinstance(claims, list):
+            claims = []
+        data["technical_accuracy"] = {"classification": cls, "claims": claims}
+    elif ta is None:
+        pass
+    else:
+        data["technical_accuracy"] = None
+    # stress_management
+    sm = data.get("stress_management")
+    if isinstance(sm, dict):
+        for k in ("addresses", "missing", "suggestions"):
+            if not isinstance(sm.get(k), list):
+                sm[k] = []
+    elif sm is not None and not isinstance(sm, dict):
+        data["stress_management"] = None
+    # criteria
+    crit = data.get("criteria")
+    if isinstance(crit, dict):
+        crit = [{"name": k, "score": v, "status": "applicable", "explanation": ""} for k, v in crit.items()]
+    if not isinstance(crit, list):
+        crit = []
+    norm_crit = []
+    for c in crit:
+        if isinstance(c, dict):
+            name = str(c.get("name") or "").strip()
+            if not name:
+                continue
+            score = c.get("score")
+            try:
+                score = int(score) if score is not None else None
+            except (TypeError, ValueError):
+                score = None
+            if score is not None:
+                score = max(0, min(100, score))
+            status = c.get("status") or "applicable"
+            if status not in {"applicable", "not_applicable", "insufficient_evidence"}:
+                status = "applicable"
+            norm_crit.append({"name": name, "score": score, "status": status, "explanation": str(c.get("explanation") or "")})
+        elif isinstance(c, str):
+            norm_crit.append({"name": c, "score": None, "status": "insufficient_evidence", "explanation": ""})
+    data["criteria"] = norm_crit
+    # list-of-str fields
+    for k in ("strengths", "weaknesses", "recommendations"):
+        v = data.get(k)
+        if isinstance(v, str):
+            data[k] = [v] if v.strip() else []
+        elif isinstance(v, list):
+            data[k] = [str(x) for x in v]
+        else:
+            data[k] = []
+    # str fields
+    for k in ("revised_answer", "practice_tip", "feedback"):
+        v = data.get(k)
+        if v is None:
+            data[k] = ""
+        elif not isinstance(v, str):
+            data[k] = str(v)
+    return data
 
 
 def _is_stress_question(prompt, question=None):
@@ -107,7 +202,6 @@ class AnswerEvaluationService:
             criteria = []
         if not criteria and isinstance(evaluation_result.get("criteria"), list):
             criteria = evaluation_result["criteria"]
-
         scores = {}
         for item in criteria:
             if isinstance(item, dict) and "name" in item:
@@ -154,9 +248,10 @@ class AnswerEvaluationService:
             "created_at": row.get("created_at"),
             "updated_at": row.get("updated_at"),
         }
-        payload["evaluation"] = dict(payload)
-        payload["result"] = dict(payload)
-        payload["analysis"] = dict(payload)
+        _snapshot = {k: v for k, v in payload.items() if k not in {"evaluation", "result", "analysis"}}
+        payload["evaluation"] = _snapshot
+        payload["result"] = _snapshot
+        payload["analysis"] = _snapshot
         return payload
     async def evaluate_answer(self, provider, session_id=None, question_id=None, answer_id=None, question_prompt=None, candidate_answer=None, answer=None, force=False, context=None):
         if answer is not None and candidate_answer is None:
@@ -238,14 +333,19 @@ class AnswerEvaluationService:
                 if attempt == 0:
                     raw = await provider.generate_with_system(system_prompt, user_prompt)
                 else:
-                    raw = await provider.generate_with_system(system_prompt, user_prompt + "\n\nLa respuesta anterior no fue JSON valido. Corrigela y devuelve solo JSON.\n" + "Respuesta anterior: " + str(raw) + "\nError: " + str(error_text))
+                    raw = await provider.generate_with_system(system_prompt, user_prompt + "\n\nLa respuesta anterior no fue JSON valido. Devuelve unicamente JSON valido conforme al esquema. No incluyas texto fuera del JSON.")
                 data = json.loads(raw)
+                data = _normalize_llm_output(data)
                 from backend.app.api.schemas import AnswerEvaluationLLMOutput
                 parsed = AnswerEvaluationLLMOutput.model_validate(data)
                 break
             except (json.JSONDecodeError, ValidationError, ValueError, TypeError) as exc:
                 error_text = str(exc)
                 parsed = None
+            except Exception as exc:
+                error_text = str(exc)
+                parsed = None
+                break
         if parsed is None:
             raise AdmissionError("malformed_llm_output", "El modelo devolvio una respuesta invalida.", 502)
 

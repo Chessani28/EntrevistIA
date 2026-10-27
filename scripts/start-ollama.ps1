@@ -9,6 +9,7 @@ else {
 }
 $settings = @{
     OLLAMA_HOST = '127.0.0.1:11434'
+    OLLAMA_MODELS = (Join-Path $projectRoot 'storage/models')
     OLLAMA_NO_CLOUD = '1'
     OLLAMA_CONTEXT_LENGTH = '2048'
     OLLAMA_NUM_PARALLEL = '1'
