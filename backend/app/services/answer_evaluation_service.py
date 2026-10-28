@@ -27,6 +27,54 @@ def _now() -> str:
 DISCLAIMER = "Evaluacion generada por IA para preparacion del candidato. No constituye una decision oficial de admision ni una medicion psicometrica validada."
 
 
+def _extract_json_object(raw: str) -> str | None:
+    """Extract the first balanced JSON object/array from raw LLM output.
+
+    Handles markdown code fences and trailing/duplicate content that would
+    make ``json.loads`` fail with "Extra data".
+    """
+    if not isinstance(raw, str):
+        return None
+    text = raw.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines and lines[0].strip().startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        text = "\n".join(lines).strip()
+    start = -1
+    for i, ch in enumerate(text):
+        if ch in "{[":
+            start = i
+            break
+    if start == -1:
+        return None
+    depth = 0
+    in_str = False
+    esc = False
+    for i in range(start, len(text)):
+        c = text[i]
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+        else:
+            if c == '"':
+                in_str = True
+            elif c in "{[":
+                depth += 1
+            elif c in "}]":
+                depth -= 1
+                if depth == 0:
+                    return text[start:i + 1]
+    return None
+
+
+
 def _normalize_llm_output(data):
     if not isinstance(data, dict):
         return data
@@ -334,7 +382,8 @@ class AnswerEvaluationService:
                     raw = await provider.generate_with_system(system_prompt, user_prompt)
                 else:
                     raw = await provider.generate_with_system(system_prompt, user_prompt + "\n\nLa respuesta anterior no fue JSON valido. Devuelve unicamente JSON valido conforme al esquema. No incluyas texto fuera del JSON.")
-                data = json.loads(raw)
+                candidate = _extract_json_object(raw)
+                data = json.loads(candidate if candidate is not None else raw)
                 data = _normalize_llm_output(data)
                 from backend.app.api.schemas import AnswerEvaluationLLMOutput
                 parsed = AnswerEvaluationLLMOutput.model_validate(data)
