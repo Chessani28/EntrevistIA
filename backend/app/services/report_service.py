@@ -290,6 +290,9 @@ class ReportService:
         pdf.text("Evaluaciones disponibles: " + str(data["evaluated_count"]), size=11)
         if average is None:
             pdf.text("Puntaje promedio de preparacion (simulacion): No disponible (faltan evaluaciones).", size=11, bold=True)
+        elif data["evaluated_count"] < data["completed_count"]:
+            pdf.text("Promedio provisional: " + str(average) + " / 100", size=11, bold=True)
+            pdf.text("Evaluaciones faltantes: " + str(data["completed_count"] - data["evaluated_count"]), size=10, italic=True)
         else:
             pdf.text("Puntaje promedio de preparacion (simulacion): " + str(average) + " / 100", size=11, bold=True)
             pdf.text("Calculo: promedio aritmetico de " + str(data["evaluated_count"]) + " evaluaciones individuales. Las respuestas sin evaluacion no se tratan como cero.", size=9, italic=True, space_after=8)
@@ -342,7 +345,10 @@ class ReportService:
                 pdf.spacer(4)
                 continue
             score = ev.get("overall_score", ev.get("score"))
-            pdf.text("Evaluacion simulada: " + str(score if score is not None else "No disponible") + " / 100", size=11, bold=True)
+            if score is None:
+                pdf.text("Evaluación pendiente o no disponible", size=11, bold=True, italic=True)
+            else:
+                pdf.text("Evaluacion simulada: " + str(score) + " / 100", size=11, bold=True)
             criteria = ev.get("criteria") or []
             if criteria:
                 pdf.text("Criterios:", size=10, bold=True, space_after=2)

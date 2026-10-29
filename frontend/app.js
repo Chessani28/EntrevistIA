@@ -1,4 +1,4 @@
-﻿import { api, jsonOptions, elapsed } from "./core.mjs";
+import { api, jsonOptions, elapsed } from "./core.mjs";
 const $ = id => document.getElementById(id);
 const state = {
   page: "dashboard",
